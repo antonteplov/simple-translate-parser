@@ -42,29 +42,44 @@ class MyHTMLParserN(HTMLParser):
 
 
 
-if len(sys.argv) < 2:
-    print ("Use %s  <word>" % (sys.argv[0]))
-    print ("Example: %s  бухать" % (sys.argv[0]))
-    print ("Example: %s  водка" % (sys.argv[0]))
-    print ("Example: %s  синий" % (sys.argv[0]))
-    exit()
 
-word = sys.argv[1]
-r = requests.get("https://www.translate.ru/grammar/ru-en/"+word)
-# print (r.text)
-Txt = r.text
-parser = MyHTMLParserV()    ## Глаголы 
-parser.feed(Txt)
-if len(parser.R)!=0:
-    for r in parser.R:
-      print (r)
-parser.close()
+def Parse(word):    
+    r = requests.get("https://www.translate.ru/grammar/ru-en/"+word)
+    #print (r.text)
+    Txt = r.text
+ 
+    parser = MyHTMLParserV()    ## Глаголы 
+    parser.R=list()
+    parser.feed(Txt)
+    if len(parser.R)!=0:
+        for r in parser.R:
+          print (r)
+    parser.close()
+    parser.reset()
+    parser.R=list()
+    parser = MyHTMLParserN()  ## Существительные и прилагательные
+    parser.R=list()
+    parser.feed(Txt)
+    if len(parser.R)!=0:
+        for r in parser.R:
+          print (r)
+    parser.close()
+    parser.reset()
+    parser.R=list()
+    time.sleep(2)  ## Чтобы не замучать сайт
+    return
 
-parser = MyHTMLParserN()  ## Существительные и прилагательные
-parser.feed(Txt)
-if len(parser.R)!=0:
-    for r in parser.R:
-      print (r)
-parser.close()
-
-time.sleep(2)  ## Чтобы не замучать сайт
+def main():
+    if len(sys.argv) < 2:
+        print ("TeplovParser v%s" % 1)
+        print ("Use %s  <word1> [word2] .. [wordN]" % (sys.argv[0]))
+        print ("Example: %s  бухать" % (sys.argv[0]))
+        print ("Example: %s  водка пиво" % (sys.argv[0]))
+        print ("Example: %s  синий нос торчит" % (sys.argv[0]))
+        exit()
+    i=1;
+    while i < len(sys.argv):
+        Parse(sys.argv[i])
+        i+=1
+ 
+if __name__ == "__main__":  main()
