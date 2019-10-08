@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 from html.parser import HTMLParser
 import requests # для отправки HTTP GET/POST  запросов
 import sys
-
+import time
 class MyHTMLParserV(HTMLParser):
     flag=0
     R=list()
@@ -42,24 +42,29 @@ class MyHTMLParserN(HTMLParser):
 
 
 
-if len(sys.argv) < 3:
-    print ("Use %s <v|n> <word>" % (sys.argv[0]))
-    print ("Example: %s v бухать" % (sys.argv[0]))
-    print ("Example: %s n водка" % (sys.argv[0]))
-    print ("Example: %s n синий" % (sys.argv[0]))
-    exit()
-if sys.argv[1] not in ('v','n'):
-    print ("First argument error!")
+if len(sys.argv) < 2:
+    print ("Use %s  <word>" % (sys.argv[0]))
+    print ("Example: %s  бухать" % (sys.argv[0]))
+    print ("Example: %s  водка" % (sys.argv[0]))
+    print ("Example: %s  синий" % (sys.argv[0]))
     exit()
 
-word = sys.argv[2]
+word = sys.argv[1]
 r = requests.get("https://www.translate.ru/grammar/ru-en/"+word)
 # print (r.text)
+Txt = r.text
+parser = MyHTMLParserV()    ## Глаголы 
+parser.feed(Txt)
+if len(parser.R)!=0:
+    for r in parser.R:
+      print (r)
+parser.close()
 
-if sys.argv[1]=='v': parser = MyHTMLParserV()
-if sys.argv[1]=='n': parser = MyHTMLParserN()
-parser.feed(r.text)
-for r in parser.R:
-    print (r)
-    
+parser = MyHTMLParserN()  ## Существительные и прилагательные
+parser.feed(Txt)
+if len(parser.R)!=0:
+    for r in parser.R:
+      print (r)
+parser.close()
 
+time.sleep(2)  ## Чтобы не замучать сайт
