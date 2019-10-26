@@ -49,7 +49,7 @@ def Parse(word):
     Txt = r.text
  
     parser = MyHTMLParserV()    ## Глаголы 
-    parser.R=list()
+    parser.R=[word]
     parser.feed(Txt)
     if len(parser.R)!=0:
         for r in parser.R:
