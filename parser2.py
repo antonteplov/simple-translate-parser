@@ -4,13 +4,13 @@
 # INSTALL
 # pip install pymorphy2
 # pip install pymorphy2-dicts
-# pip install pymorphy2-dicts
+# pip install DAWG
+
 
 # Импортирует поддержку UTF-8.
 from __future__ import unicode_literals
 
 import sys
-import time
 import pymorphy2
 
 
