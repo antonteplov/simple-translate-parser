@@ -21,7 +21,7 @@ import tta_module_4w
 
 
 
-MIN_WORD_LEN = 1
+
 
 INFO = {
     'filename': "",
@@ -50,34 +50,34 @@ def getWords(line):
 
 def main():
     W ={}  
-    if len(sys.argv) < 3:
+    if len(sys.argv) < 4:
         print ("Teplov Text Analyzer (TTA) v%s" % 1)
-        print ("Use %s <input file> <output file> [blacklist file]" % (sys.argv[0]))
-        print ("Input file содержит текстовые строки - одна строка , одна фраза для анализа\n Output file  будет содержать отчет о выполненной работе в формате CSV. Слова или словосочетания будут приведены в нормальную форму и проведен подсчёт вхождений такий простых конструкций.\n В качестве необезательного параметра можно указать имя файла blacklist. В этом файле одна строка=одно слово, которое будет исключаться из анализа.")
+        print ("Use %s <1|2|3|4> <input file> <output file> [blacklist file]" % (sys.argv[0]))
+        print ("Первый параметр - число, указывающее на кол-во слов в словосочетаниях для анализа\nInput file содержит текстовые строки - одна строка , одна фраза для анализа\n Output file  будет содержать отчет о выполненной работе в формате CSV. Слова или словосочетания будут приведены в нормальную форму и проведен подсчёт вхождений такий простых конструкций.\n В качестве необезательного параметра можно указать имя файла blacklist. В этом файле одна строка=одно слово, которое будет исключаться из анализа.")
         exit()
-    print ("Try open input file %s" % (sys.argv[1]) )
+    print ("Try open input file %s" % (sys.argv[2]) )
     try:
-        Fin = open(sys.argv[1])
+        Fin = open(sys.argv[2])
     except:
         print("Exception: Can't open file")
     else:
-        print("Try open output file %s" % (sys.argv[2]) )
+        print("Try open output file %s" % (sys.argv[3]) )
         try:
-            Fout = open(sys.argv[2],'w')
+            Fout = open(sys.argv[3],'w')
         except:
             print("Exception: Can't open file") 
         else:
-            INFO['filename'] = sys.argv[1]
+            INFO['filename'] = sys.argv[2]
             for line in Fin:
                 INFO['total_lines'] +=1
                 INFO['total_raw_words'] += len (getWords(line))
                 #print(line)
                 
             
-            if len(sys.argv) == 4:
-                print("Try open black list file %s" % (sys.argv[3]) )
+            if len(sys.argv) == 5:
+                print("Try open black list file %s" % (sys.argv[4]) )
                 try:
-                    Fbl = open(sys.argv[3])
+                    Fbl = open(sys.argv[4])
                 except:
                     print("Exception: Can't open file") 
                 else:
@@ -100,15 +100,13 @@ def main():
             for line in Fin:
                 current_line +=1
                 print("Analyze line: %d of %d\r" % (current_line,INFO['total_lines']))
-##### Comment/uncomment here:
 
-                # INFO['analyzed_words'] += tta_module_1w.proceed(getWords(line), W, BL) ## Анализируем по 1 слову в строке , Если BL опустить то  без блеклиста.
-                # INFO['analyzed_words'] += tta_module_2w.proceed(getWords(line), W, BL) ## Анализируем по 2 слова строке , Если BL опустить то  без блеклиста.
-                # INFO['analyzed_words'] += tta_module_3w.proceed(getWords(line), W, BL) ## Анализируем по 3 слова строке , Если BL опустить то  без блеклиста.
-                INFO['analyzed_words'] += tta_module_4w.proceed(getWords(line), W, BL) ## Анализируем по 4 слова строке , Если BL опустить то  без блеклиста.
-
-
-###########################
+                mode = int(sys.argv[1])
+                INFO['mode']=mode
+                if mode==1:    INFO['analyzed_words'] += tta_module_1w.proceed(getWords(line), W, BL) ## Анализируем по 1 слову в строке , Если BL опустить то  без блеклиста.
+                elif mode==2: INFO['analyzed_words'] += tta_module_2w.proceed(getWords(line), W, BL) ## Анализируем по 2 слова строке , Если BL опустить то  без блеклиста.
+                elif mode==3: INFO['analyzed_words'] += tta_module_3w.proceed(getWords(line), W, BL) ## Анализируем по 3 слова строке , Если BL опустить то  без блеклиста.
+                elif mode==4: INFO['analyzed_words'] += tta_module_4w.proceed(getWords(line), W, BL) ## Анализируем по 4 слова строке , Если BL опустить то  без блеклиста.
 
             Fin.close()
             for p in INFO:
