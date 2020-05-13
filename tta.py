@@ -14,7 +14,14 @@ import sys
 import time
 import pymorphy2
 
-MIN_WORD_LEN = 3
+import tta_module_1w
+import tta_module_2w
+import tta_module_3w
+import tta_module_4w
+
+
+
+MIN_WORD_LEN = 1
 
 INFO = {
     'filename': "",
@@ -24,32 +31,29 @@ INFO = {
 
     }
 
-W ={}  
-
 BL = []
 
-
-
+Mor = pymorphy2.MorphAnalyzer()
 
 def getLemma(w):    
      morph = pymorphy2.MorphAnalyzer()
      p = morph.parse(w)[0]
      return p.normal_form    
 
-def GetWord(line):
-    
-    line = re.sub(r"[#%!@*,.;:?(){}_/]", "", line)  #удаляем ненужные симоволы
+def getWords(line):
+    line = re.sub(r"[#%!@*,.;:?(){}_/\"]", "", line)  #удаляем ненужные символы
     line = re.sub(r"\s+"," ",line)  # удаляем лишние пробелы
     line = line.strip() #удаляем символы пробелов в начале и конце строки
     line = line.lower()
-    return line.split(' ')
+    return line.split(' ') 
 
 
 def main():
+    W ={}  
     if len(sys.argv) < 3:
         print ("Teplov Text Analyzer (TTA) v%s" % 1)
         print ("Use %s <input file> <output file> [blacklist file]" % (sys.argv[0]))
-        print ("Input file содержит текстовые строки - одна строка , одна фраза для анализа\n Output file  будет содержать отчет о выполненной работе в формате CSV. Слова будут приведены в нормальную форму и проведен подсет вхождений такий простых слов.\n В качестве необезательного параметра можно указать имя файла blacklist. В этом файле одна строка=одно слово, которое будет исключаться из анализа.")
+        print ("Input file содержит текстовые строки - одна строка , одна фраза для анализа\n Output file  будет содержать отчет о выполненной работе в формате CSV. Слова или словосочетания будут приведены в нормальную форму и проведен подсчёт вхождений такий простых конструкций.\n В качестве необезательного параметра можно указать имя файла blacklist. В этом файле одна строка=одно слово, которое будет исключаться из анализа.")
         exit()
     print ("Try open input file %s" % (sys.argv[1]) )
     try:
@@ -66,10 +70,9 @@ def main():
             INFO['filename'] = sys.argv[1]
             for line in Fin:
                 INFO['total_lines'] +=1
-                print(line)
-                for word in GetWord(line):
-                    #print("{%s} %d",word,len(word))
-                    INFO['total_raw_words'] +=1
+                INFO['total_raw_words'] += len (getWords(line))
+                #print(line)
+                
             
             if len(sys.argv) == 4:
                 print("Try open black list file %s" % (sys.argv[3]) )
@@ -97,23 +100,26 @@ def main():
             for line in Fin:
                 current_line +=1
                 print("Analyze line: %d of %d\r" % (current_line,INFO['total_lines']))
-                for word in GetWord(line):
-                    
-                    if len(word) >= MIN_WORD_LEN:
-                        #print("%s %d" % (word , len(word)))
-                        INFO['analyzed_words'] +=1
-                        word = getLemma(word)
-                        if word not in BL:
-                            if word in W:
-                                W[word] += 1
-                            else:
-                                W[word]=1
+##### Comment/uncomment here:
+
+                # INFO['analyzed_words'] += tta_module_1w.proceed(getWords(line), W, BL) ## Анализируем по 1 слову в строке , Если BL опустить то  без блеклиста.
+                # INFO['analyzed_words'] += tta_module_2w.proceed(getWords(line), W, BL) ## Анализируем по 2 слова строке , Если BL опустить то  без блеклиста.
+                # INFO['analyzed_words'] += tta_module_3w.proceed(getWords(line), W, BL) ## Анализируем по 3 слова строке , Если BL опустить то  без блеклиста.
+                INFO['analyzed_words'] += tta_module_4w.proceed(getWords(line), W, BL) ## Анализируем по 4 слова строке , Если BL опустить то  без блеклиста.
+
+
+###########################
 
             Fin.close()
             for p in INFO:
-                Fout.write(';'.join((p,str(INFO[p])))+'\n')
-            for p in W:
-                Fout.write(';'.join((p,str(W[p])))+'\n')
+                print(' '.join((p,str(INFO[p])))+'\n')
+            print("Sorting and write output to file...")
+            list_W = list(W.items())
+            list_W.sort(key=lambda i: i[1], reverse=True )
+            W = list_W
+            for p in list_W:
+                Fout.write(';'.join((p[0],str(p[1]),str(p[1]*100/INFO['analyzed_words'])))+'\n')
+            print("Done")
                 
             Fout.close()
 
